@@ -6,33 +6,61 @@ import android.support.v4.content.ContextCompat
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
 import android.text.style.AbsoluteSizeSpan
+import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.TextAppearanceSpan
+import android.view.View
+import android.widget.TextView
 
 /**
  * @Author:Wzb
  * @Date:2017-03-14 19:03
  * @Desc:
  */
-fun SpannableString.setForegroundColor(color: Int, start: Int = 0, end: Int = this.length)
-        : SpannableString
+fun <S> S.setForegroundColor(color: Int, start: Int = 0, end: Int = this.length,
+                             flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        : S where S : Spannable
         = this.apply {
     setSpan(ForegroundColorSpan(color), start, end,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            flags)
 }
 
-fun SpannableString.setSizeSpan(size: Int, start: Int = 0, end: Int = this.length,
-                                dp: Boolean = true): SpannableString
+fun <S : Spannable> S.setSizeSpan(size: Int, start: Int = 0, end: Int = this.length,
+                                  dp: Boolean = true,
+                                  flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE): S
         = this.apply {
     setSpan(AbsoluteSizeSpan(size, dp), start, end,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            flags)
 }
 
-fun SpannableStringBuilder.setForegroundColor(color: Int, start: Int = 0, end: Int = this.length)
-        : SpannableStringBuilder
-        = this.apply {
-    setSpan(ForegroundColorSpan(color), start, end,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+inline fun <S : Spannable> S.setClickSpan(view: TextView, underline: Boolean = false,
+                                          start: Int = 0, end: Int = this.length,
+                                          crossinline click: (View) -> Unit): S {
+    setSpan(object : ClickableSpan() {
+        override fun onClick(widget: View) {
+            click(widget)
+        }
+
+        override fun updateDrawState(ds: TextPaint) {
+            if (underline) {
+                super.updateDrawState(ds)
+            } else {
+                ds.isUnderlineText = false
+            }
+        }
+    }, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    view.movementMethod = LinkMovementMethod.getInstance()
+    return this
+}
+
+fun <S : Spannable> S.setTextAppearanceSpan(context: Context, resId: Int,
+                                        start: Int = 0, end: Int = length,
+                                        flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE): S {
+    setSpan(TextAppearanceSpan(context, resId), start, end, flags)
+    return this
 }
 
 fun SpannableStringBuilder.appendColorSpan(append: String, color: Int)
@@ -41,7 +69,8 @@ fun SpannableStringBuilder.appendColorSpan(append: String, color: Int)
     append(append, ForegroundColorSpan(color), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 } else {
     val start = length
-    append(append).setForegroundColor(color, start)
+    append(append)
+            .setForegroundColor(color, start)
 }
 
 fun SpannableStringBuilder.appendColorSpanRes(context: Context, append: String, resId: Int)
@@ -51,7 +80,8 @@ fun SpannableStringBuilder.appendColorSpanRes(context: Context, append: String, 
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 } else {
     val start = length
-    append(append).setForegroundColor(ContextCompat.getColor(context, resId), start)
+    append(append)
+            .setForegroundColor(ContextCompat.getColor(context, resId), start)
 }
 
 fun SpannableStringBuilder.appendColorSpanRes(context: Context, append: Int, resId: Int)
@@ -71,7 +101,8 @@ fun SpannableStringBuilder.appendSizeSpan(append: String, size: Int, dp: Boolean
     append(append, AbsoluteSizeSpan(size, dp), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 } else {
     val start = length
-    append(append).setSizeSpan(size, start, dp = dp)
+    append(append)
+            .setSizeSpan(size, start, dp = dp)
 }
 
 fun SpannableStringBuilder.appendSizeSpanRes(context: Context, resStringId: Int, size: Int,
@@ -82,70 +113,45 @@ fun SpannableStringBuilder.appendSizeSpanRes(context: Context, resStringId: Int,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 } else {
     val start = length
-    append(context.getString(resStringId)).setSizeSpan(size, start, dp = dp)
-}
-
-fun SpannableStringBuilder.setForegroundColorRes(context: Context, resId: Int, start: Int = 0,
-                                                 end: Int = this.length)
-        : SpannableStringBuilder
-        = this.apply {
-    setSpan(ForegroundColorSpan(ContextCompat.getColor(context, resId)), start, end,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-}
-
-fun SpannableStringBuilder.setForegroundColor(color: Int, start: String, end: String = "")
-        : SpannableStringBuilder
-        = this.apply {
-    setSpan(ForegroundColorSpan(color), this.indexOf(start),
-            if (end.isNullOrEmpty().not()) this.indexOf(end) else this.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-}
-
-fun SpannableStringBuilder.setForegroundColorRes(context: Context, resId: Int,
-                                                 start: String, end: String = "")
-        : SpannableStringBuilder
-        = this.apply {
-    setSpan(ForegroundColorSpan(ContextCompat.getColor(context, resId)), this.indexOf(start),
-            if (end.isNullOrEmpty().not()) this.indexOf(end) else this.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-}
-
-fun SpannableStringBuilder.setSizeSpan(size: Int, start: Int = 0, end: Int = this.length,
-                                       dp: Boolean = true)
-        : SpannableStringBuilder
-        = this.apply {
-    setSpan(AbsoluteSizeSpan(size, dp), start, end,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    append(context.getString(resStringId))
+            .setSizeSpan(size, start, dp = dp)
 }
 
 fun CharSequence.setForegroundColorSpan(color: Int, start: Int = 0, end: Int = this.length)
-        = SpannableString(this).setForegroundColor(color, start, end)
+        = SpannableString(this)
+        .setForegroundColor(color, start, end)
 
 fun CharSequence.setForegroundColorSpanBuilder(color: Int, start: Int = 0, end: Int = this.length)
-        = SpannableStringBuilder(this).setForegroundColor(color, start, end)
+        = SpannableStringBuilder(this)
+        .setForegroundColor(color, start, end)
 
 fun CharSequence.setForegroundColorResSpan(context: Context, resId: Int,
                                            start: Int = 0, end: Int = this.length)
-        = SpannableString(this).setForegroundColor(ContextCompat.getColor(context, resId), start, end)
+        = SpannableString(this)
+        .setForegroundColor(ContextCompat.getColor(context, resId), start, end)
 
 fun CharSequence.setForegroundColorResSpanBuilder(context: Context, resId: Int,
                                                   start: Int = 0, end: Int = this.length)
-        = SpannableStringBuilder(this).setForegroundColor(ContextCompat.getColor(context, resId),
-        start, end)
+        = SpannableStringBuilder(this)
+        .setForegroundColor(ContextCompat.getColor(context, resId), start, end)
 
 fun CharSequence.setSizeSpan(size: Int, start: Int = 0, end: Int = this.length, dp: Boolean = true)
-        = SpannableString(this).setSizeSpan(size, start, end, dp)
+        = SpannableString(this)
+        .setSizeSpan(size, start, end, dp)
 
 fun CharSequence.setSizeSpanBuilder(size: Int, start: Int = 0, end: Int = this.length,
                                     dp: Boolean = true)
-        = SpannableStringBuilder(this).setSizeSpan(size, start, end, dp)
+        = SpannableStringBuilder(this)
+        .setSizeSpan(size, start, end, dp)
 
-fun CharSequence.setStyleSpanBuilder(size: Int, color: Int, start: Int = 0, end: Int = this.length,
+fun CharSequence.setStyleSpanBuilder(context: Context,resId: Int,
+                                     start: Int = 0, end: Int = this.length,
                                      dp: Boolean = true)
-        = SpannableStringBuilder(this).setSizeSpan(size, start, end, dp)
-        .setForegroundColor(color, start, end)
+        = SpannableStringBuilder(this)
+        .setTextAppearanceSpan(context, resId, start, end)
 
-fun CharSequence.setStyleSpan(size: Int, color: Int, start: Int = 0, end: Int = this.length,
+fun CharSequence.setStyleSpan(context: Context,resId: Int,
+                              start: Int = 0, end: Int = this.length,
                               dp: Boolean = true)
-        = SpannableString(this).setSizeSpan(size, start, end, dp)
-        .setForegroundColor(color, start, end)
+        = SpannableString(this)
+        .setTextAppearanceSpan(context, resId, start, end)
