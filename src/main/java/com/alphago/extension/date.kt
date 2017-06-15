@@ -27,34 +27,64 @@ fun SimpleDateFormat.formatPeriod(symbol: String, dateStr: String): String {
     try {
         val calendar = parse2C(symbol, dateStr)
         if (calendar != null) {
-            val time = calendar.timeInMillis
-            val now = System.currentTimeMillis()
-            val period = now - time
-            val abs = Math.abs(period)
-            val minute = 60 * 1000L
-            val hour = 60 * minute
-            val day = 24 * hour
-            val month = 30 * day
-            val year = 12 * month
-
-            return (if (abs < minute) {
-                "1分钟"
-            } else if (abs < hour) {//一小时内
-                "${abs / minute}分钟"
-            } else if (abs < day) {
-                "${abs / hour}个小时"
-            } else if (abs < month) {
-                "${abs / day}天"
-            } else if (abs < year) {
-                "${abs / month}个月"
-            } else {
-                "${abs / year}年"
-            }) + if (period > 0) "前" else "后"
+            return formatPeriod(calendar)
         } else return ""
     } catch (e: Exception) {
         e.printStackTrace()
         return ""
     }
+}
+
+fun SimpleDateFormat.formatPeriod(calendar: Calendar): String {
+    val time = calendar.timeInMillis
+    val now = System.currentTimeMillis()
+    val period = now - time
+    val abs = Math.abs(period)
+    val minute = 60 * 1000L
+    val hour = 60 * minute
+    val day = 24 * hour
+    val month = 30 * day
+    val year = 12 * month
+
+    return (if (abs < minute) {
+        "1分钟"
+    } else if (abs < hour) {//一小时内
+        "${abs / minute}分钟"
+    } else if (abs < day) {
+        "${abs / hour}个小时"
+    } else if (abs < month) {
+        "${abs / day}天"
+    } else if (abs < year) {
+        "${abs / month}个月"
+    } else {
+        "${abs / year}年"
+    }) + if (period > 0) "前" else "后"
+}
+
+fun SimpleDateFormat.formatDayTimePeriod(time: Long, symbol: String): String {
+    val now = System.currentTimeMillis()
+    val period = now - time
+    val abs = Math.abs(period)
+    val minute = 60 * 1000L
+    val hour = 60 * minute
+    val day = 24 * hour
+    if (abs < day) {
+        return (if (abs < minute) {
+            "1分钟"
+        } else if (abs < hour) {//一小时内
+            "${abs / minute}分钟"
+        } else {//一天内
+            "${abs / hour}个小时"
+        }) + if (period > 0) "前" else "后"
+    } else {
+        applyPattern(symbol)
+        val date = Date(time)
+        return format(date)
+    }
+}
+
+fun SimpleDateFormat.formatDayTimePeriod(calendar: Calendar, symbol: String): String {
+    return formatDayTimePeriod(calendar.timeInMillis, symbol)
 }
 
 fun SimpleDateFormat.format(date: Date, symbol: String): String {
