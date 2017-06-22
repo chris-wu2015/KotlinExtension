@@ -69,12 +69,13 @@ fun SimpleDateFormat.formatDayTimePeriod(time: Long, symbol: String): String {
     val hour = 60 * minute
     val day = 24 * hour
     if (abs < day) {
-        return (if (abs < minute) {
-            "1分钟"
-        } else if (abs < hour) {//一小时内
+        if (abs < minute) {
+            return "刚刚"
+        }
+        return ( if (abs < hour) {//一小时内
             "${abs / minute}分钟"
         } else {//一天内
-            "${abs / hour}个小时"
+            "${abs / hour}小时"
         }) + if (period > 0) "前" else "后"
     } else {
         applyPattern(symbol)
