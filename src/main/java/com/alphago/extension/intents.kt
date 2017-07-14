@@ -124,16 +124,15 @@ fun putDataToIntent(intent: Intent, vararg pair: Pair<String, Any>, bundle: Bund
 fun Context.dial(phoneNumber: String) {
     val phoneIntent = Intent(Intent.ACTION_DIAL,
             Uri.parse("tel:$phoneNumber"))
-    phoneIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    if (this !is Activity) {
+        phoneIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
     startActivity(phoneIntent)
 }
 
 fun Context.dial(resId: Int) {
     if (resId > 0) {
-        val phoneIntent = Intent(Intent.ACTION_DIAL,
-                Uri.parse("tel:${getString(resId)}"))
-        phoneIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(phoneIntent)
+        dial(getString(resId))
     }
 }
 
