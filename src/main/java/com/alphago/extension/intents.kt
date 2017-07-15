@@ -1,6 +1,8 @@
 package com.alphago.extension
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -134,6 +136,12 @@ fun Context.dial(resId: Int) {
     if (resId > 0) {
         dial(getString(resId))
     }
+}
+
+fun Context.copy(content: String) {
+    val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipData = ClipData.newPlainText("COPY", content)
+    clipboardManager.primaryClip = clipData
 }
 
 /**
