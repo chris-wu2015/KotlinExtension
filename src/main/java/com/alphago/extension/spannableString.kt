@@ -8,10 +8,7 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
-import android.text.style.AbsoluteSizeSpan
-import android.text.style.ClickableSpan
-import android.text.style.ForegroundColorSpan
-import android.text.style.TextAppearanceSpan
+import android.text.style.*
 import android.view.View
 import android.widget.TextView
 
@@ -25,6 +22,14 @@ fun <S> S.setForegroundColor(color: Int, start: Int = 0, end: Int = this.length,
         : S where S : Spannable
         = this.apply {
     setSpan(ForegroundColorSpan(color), start, end,
+            flags)
+}
+
+fun <S> S.setBackgroundColor(color: Int, start: Int = 0, end: Int = this.length,
+                             flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        : S where S : Spannable
+        = this.apply {
+    setSpan(BackgroundColorSpan(color), start, end,
             flags)
 }
 
@@ -57,8 +62,8 @@ inline fun <S : Spannable> S.setClickSpan(view: TextView, underline: Boolean = f
 }
 
 fun <S : Spannable> S.setTextAppearanceSpan(context: Context, resId: Int,
-                                        start: Int = 0, end: Int = length,
-                                        flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE): S {
+                                            start: Int = 0, end: Int = length,
+                                            flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE): S {
     setSpan(TextAppearanceSpan(context, resId), start, end, flags)
     return this
 }
@@ -144,14 +149,32 @@ fun CharSequence.setSizeSpanBuilder(size: Int, start: Int = 0, end: Int = this.l
         = SpannableStringBuilder(this)
         .setSizeSpan(size, start, end, dp)
 
-fun CharSequence.setStyleSpanBuilder(context: Context,resId: Int,
+fun CharSequence.setStyleSpanBuilder(context: Context, resId: Int,
                                      start: Int = 0, end: Int = this.length,
                                      dp: Boolean = true)
         = SpannableStringBuilder(this)
         .setTextAppearanceSpan(context, resId, start, end)
 
-fun CharSequence.setStyleSpan(context: Context,resId: Int,
+fun CharSequence.setStyleSpan(context: Context, resId: Int,
                               start: Int = 0, end: Int = this.length,
                               dp: Boolean = true)
         = SpannableString(this)
         .setTextAppearanceSpan(context, resId, start, end)
+
+fun CharSequence.setBackgroundColorSpan(color: Int, start: Int = 0, end: Int = this.length)
+        = SpannableString(this)
+        .setBackgroundColor(color, start, end)
+
+fun CharSequence.setBackgroundColorSpanBuilder(color: Int, start: Int = 0, end: Int = this.length)
+        = SpannableStringBuilder(this)
+        .setBackgroundColor(color, start, end)
+
+fun CharSequence.setBackgroundColorResSpan(context: Context, resId: Int,
+                                           start: Int = 0, end: Int = this.length)
+        = SpannableString(this)
+        .setBackgroundColor(ContextCompat.getColor(context, resId), start, end)
+
+fun CharSequence.setBackgroundColorResSpanBuilder(context: Context, resId: Int,
+                                                  start: Int = 0, end: Int = this.length)
+        = SpannableStringBuilder(this)
+        .setBackgroundColor(ContextCompat.getColor(context, resId), start, end)
